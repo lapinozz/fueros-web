@@ -8,14 +8,14 @@ npm install
 
 ```sh
 # Builds the project and opens it in a new browser tab. Auto-reloads when the project changes.
-npm start
+npm run serve
 ```
 
 ## How to build in release mode
 
 ```sh
 # Builds the project and places it into the `dist` folder.
-npm run build
+npm run build-all
 ```
 
 ## How to run unit tests
@@ -43,6 +43,6 @@ npm test -- --safari
 
 * The `src` folder contains your Rust code.
 
-* The `static` folder contains any files that you want copied as-is into the final build. It contains an `index.html` file which loads the `index.js` file.
+~~* The `static` folder contains any files that you want copied as-is into the final build. It contains an `index.html` file which loads the `index.js` file.~~
 
 * The `tests` folder contains your Rust unit tests.
