@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const globImporter = require("node-sass-glob-importer");
 const extract = require("mini-css-extract-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const dist = path.resolve(__dirname, "dist");
 
