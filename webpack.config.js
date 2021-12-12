@@ -1,18 +1,20 @@
 const path = require("path");
-const CopyPlugin = require("copy-webpack-plugin");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const globImporter = require("node-sass-glob-importer");
 const extract = require("mini-css-extract-plugin");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const dist = path.resolve(__dirname, "dist");
 
+const dev = process.env.NODE_ENV !== "production";
+
 module.exports = {
-    mode: "production",
     entry: {
         index: "./js/index.js",
     },
+    devtool: dev ? "eval-cheap-module-source-map" : "source-map",
     module: {
         rules: [
             {
@@ -51,19 +53,15 @@ module.exports = {
         path: dist,
         filename: "[name].js",
     },
-    devServer: {
-        contentBase: dist,
-    },
+    devServer: {},
     plugins: [
         new WasmPackPlugin({
             crateDirectory: __dirname,
         }),
-
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, "static", "index.html"),
             /* favicon: "./src/favicon.ico" */
         }),
-
         new MiniCssExtractPlugin(),
     ],
     experiments: {
