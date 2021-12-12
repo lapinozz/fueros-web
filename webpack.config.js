@@ -1,6 +1,7 @@
 const path = require("path");
 const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const globImporter = require('node-sass-glob-importer');
 const extract = require("mini-css-extract-plugin");
 
@@ -49,7 +50,8 @@ module.exports = {
 		new HtmlWebpackPlugin({
 				template: path.resolve(__dirname, "static", "index.html"),
 				/* favicon: "./src/favicon.ico" */
-		})
+		}),
+		new MiniCssExtractPlugin()
 	],
 	experiments: {
 		asyncWebAssembly: true,

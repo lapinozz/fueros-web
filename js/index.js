@@ -1,3 +1,4 @@
+import '../style/index.scss';
 async function main()
 {
     window.Module = await import("../pkg/index.js").catch(console.error);
