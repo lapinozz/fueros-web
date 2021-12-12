@@ -16,6 +16,12 @@ body {
     padding: 10px 20px;
     border: none;
     margin: 10px 5px;
+
+    &:hover
+    {
+        filter: brightness(1.4);
+        cursor: pointer;
+    }
 }
 
 .ui-input {
