@@ -1,0 +1,77 @@
+@import url("https://fonts.googleapis.com/css2?family=Recursive:wght@400;900&display=swap");
+
+html,
+body {
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+}
+
+.ui-button {
+    background: rgb(255, 230, 0);
+    font-family: "Recursive";
+    font-weight: 400;
+    font-size: 24pt;
+    border-radius: 10px;
+    padding: 10px 20px;
+    border: none;
+    margin: 10px 5px;
+}
+
+.ui-input {
+    border: 3px solid black;
+    border-radius: 5px;
+    font-family: "Recursive";
+    font-weight: 400;
+    font-size: 24pt;
+    padding: 10px 20px;
+    margin: 10px 5px;
+}
+
+.ui-h1 {
+    font-family: "Recursive";
+    font-weight: 900;
+    font-size: 36pt;
+    align-self: center;
+}
+
+.ui-vbox-fill {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.ui-hbox-fill {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+}
+
+.ui-panel {
+    border: 3px solid black;
+    border-radius: 10px;
+}
+
+.ui-centre {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.ui-margin {
+    margin: 10px;
+}
+
+.ui-vsep {
+    background: black;
+    width: 3px;
+    margin: 10px;
+}
+
+.ui-hsep {
+    background: black;
+    height: 3px;
+    margin: 10px;
+}
