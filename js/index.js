@@ -1,4 +1,5 @@
 import * as PIXI from 'pixi.js';
+import Array2D from './Array2D.js';
 
 import '../style/index.scss';
 import bunnyPng from '../bunny.png';
@@ -11,35 +12,65 @@ async function main()
 main();
 
 
-const app = new PIXI.Application();
+const app = new PIXI.Application({
+	backgroundColor: 0x1099bb
+});
  
 // The application will create a canvas element for you that you
 // can then insert into the DOM.
 document.body.appendChild(app.view);
+
+const board = new Array2D(10, 10);
+board.forEach((v, x, y) => 
+{
+	board[x][y] = Math.floor(Math.random() * 3);
+});
  
-// load the texture we need
-app.loader.add('bunny', bunnyPng).load((loader, resources) => {
- 
-    // This creates a texture from a 'bunny.png' image.
-    const bunny = new PIXI.Sprite(resources.bunny.texture);
- 
-    // Setup the position of the bunny
-    bunny.x = app.renderer.width / 2;
-    bunny.y = app.renderer.height / 2;
- 
-    // Rotate around the center
-    bunny.anchor.x = 0.5;
-    bunny.anchor.y = 0.5;
- 
-    // Add the bunny to the scene we are building.
-    app.stage.addChild(bunny);
- 
-    // Listen for frame updates
-    app.ticker.add(() => {
-         // each frame we spin the bunny around a bit
-        bunny.rotation += 0.01;
-    });
+const graphics = new PIXI.Graphics();
+
+const caseColors = [0XFF0000, 0X0000FF, 0X00FF00];
+const caseSize = 40;
+board.forEach((v, x, y) => 
+{
+	graphics.beginFill(caseColors[board[x][y]]);
+	graphics.drawRect(caseSize * x, caseSize * y, caseSize, caseSize);
+	graphics.endFill();
 });
 
+console.log(board)
 
-window.test();
+const edgeSize = 5;
+for(let x = 0; x <= board.x; x++)
+{
+	for(let y = 0; y <= board.y; y++)
+	{
+		if(y < board.y)
+		{
+		    const inBound = board.inBounds(x - 1, y, 2, 1);
+			const isSame = inBound && board[x - 1][y] == board[x][y];
+			const isDefault = isSame && board[x][y] == 0;
+
+			if(!isSame || isDefault)
+			{
+				graphics.beginFill(isDefault ? 0x404040 : 0);
+				graphics.drawRect(caseSize * x - edgeSize / 2, caseSize * y, edgeSize, caseSize);
+				graphics.endFill();	
+			}
+		}
+		if(x < board.x)
+		{
+		    const inBound = board.inBounds(x, y - 1, 1, 1);
+			const isSame = inBound && board[x][y - 1] == board[x][y];
+			const isDefault = isSame && board[x][y] == 0;
+
+			if(!isSame || isDefault)
+			{
+				graphics.beginFill(isDefault ? 0x404040 : 0);
+				graphics.drawRect(caseSize * x, caseSize * y - edgeSize / 2, caseSize, edgeSize);
+				graphics.endFill();	
+			}
+		}
+	}
+}
+
+app.stage.addChild(graphics);
