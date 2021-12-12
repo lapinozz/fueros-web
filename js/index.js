@@ -40,11 +40,6 @@ app.loader.add('bunny', bunnyPng).load((loader, resources) => {
         bunny.rotation += 0.01;
     });
 });
-import '../style/index.scss';
-async function main()
-{
-    window.Module = await import("../pkg/index.js").catch(console.error);
-}
 
-main();
 
+window.test();

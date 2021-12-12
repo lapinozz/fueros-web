@@ -7,11 +7,13 @@ const extract = require("mini-css-extract-plugin");
 
 const dist = path.resolve(__dirname, "dist");
 
+const dev = process.env.NODE_ENV !== 'production'
+
 module.exports = {
-	mode: "production",
 	entry: {
 		index: "./js/index.js"
 	},
+	devtool: dev ? 'eval-cheap-module-source-map' : 'source-map',
 	module: {
 		rules: [{
 				test: /\.(sa|sc|c)ss$/,
@@ -46,7 +48,6 @@ module.exports = {
 		new WasmPackPlugin({
 			crateDirectory: __dirname,
 		}),
-
 		new HtmlWebpackPlugin({
 				template: path.resolve(__dirname, "static", "index.html"),
 				/* favicon: "./src/favicon.ico" */
