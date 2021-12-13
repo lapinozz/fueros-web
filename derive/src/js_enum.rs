@@ -44,11 +44,8 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
         let out_ident = quote::format_ident!("Js{}", ident);
         let out_fields = variants
             .iter()
-            .fold(Vec::new(), |mut v, x| {
-                v.extend(&x.out_fields);
-                v
-            })
-            .into_iter()
+            .map(|x| &x.out_fields)
+            .flatten()
             .map(|(ident, ty)| {
                 quote! {
                     pub #ident: Option<#ty>
@@ -58,7 +55,6 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
         let from_match_cases = variants
             .iter()
             .map(|x| {
-                //let full_variant_ident = quote::format_ident!("{}::{}", ident, x.name);
                 let variant_ident = quote::format_ident!("{}", x.name);
                 let full_variant_ident = quote! { #ident::#variant_ident };
                 let field_names = x.in_fields.iter().map(|x| x.clone()).collect::<Vec<_>>();

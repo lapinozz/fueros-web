@@ -2,9 +2,7 @@
 name = "fueros_derive"
 description = "Derive macros for Fueros"
 version = "0.1.0"
-authors = ["You <you@example.com>"]
-categories = ["wasm"]
-readme = "README.md"
+authors = ["jazzfool"]
 edition = "2021"
 
 [lib]

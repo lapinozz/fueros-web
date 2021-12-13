@@ -2,7 +2,7 @@
 name = "fueros"
 description = "My super awesome Rust, WebAssembly, and Webpack project!"
 version = "0.1.0"
-authors = ["You <you@example.com>"]
+authors = ["alexdevteam", "lapinozz", "jazzfool"]
 categories = ["wasm"]
 readme = "README.md"
 edition = "2021"
