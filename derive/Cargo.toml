@@ -1,0 +1,19 @@
+[package]
+name = "fueros_derive"
+description = "Derive macros for Fueros"
+version = "0.1.0"
+authors = ["You <you@example.com>"]
+categories = ["wasm"]
+readme = "README.md"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+# absolutely incredible
+# all rust deps are 1.0
+# is this real life?
+syn = "1.0"
+quote = "1.0"
+proc-macro2 = "1.0"

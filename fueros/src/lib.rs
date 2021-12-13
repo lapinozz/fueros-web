@@ -1,7 +1,6 @@
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
-
 // When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
 // allocator.
 //
@@ -9,7 +8,6 @@ use web_sys::console;
 #[cfg(feature = "wee_alloc")]
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
-
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
@@ -19,7 +17,6 @@ pub fn main_js() -> Result<(), JsValue> {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
 
-
     // Your code goes here!
     console::log_1(&JsValue::from_str("Hello my world!"));
 
@@ -28,7 +25,31 @@ pub fn main_js() -> Result<(), JsValue> {
 
 #[wasm_bindgen()]
 pub fn test() -> JsValue {
-
     // Your code goes here!
-   JsValue::from_str("Hello my world!")
+    JsValue::from_str("Hello my world!")
+}
+
+#[cfg(test)]
+mod tests {
+    use fueros_derive::JsEnum;
+
+    #[test]
+    fn test_js_enum() {
+        #[derive(JsEnum)]
+        enum TestEnum {
+            Hello { number: u32, string: String },
+            World { array: [u32; 16] },
+        }
+
+        let original = TestEnum::Hello {
+            number: 1,
+            string: String::from("bruh"),
+        };
+
+        let js: JsTestEnum = original.into();
+
+        assert_eq!(js.variant, "Hello");
+        assert_eq!(js.Hello_number, Some(1));
+        assert_eq!(js.Hello_string, Some("bruh".to_string()));
+    }
 }
