@@ -1,0 +1,73 @@
+extern crate proc_macro;
+
+use {proc_macro::TokenStream, quote::quote};
+
+pub fn js_enum_impl(attr: TokenStream, input: TokenStream) -> TokenStream {
+    let ast: syn::ItemImpl = syn::parse(input).unwrap();
+    let ident = quote::format_ident!("{}", attr.to_string());
+    let out_ident = quote::format_ident!("Js{}", attr.to_string());
+    let out_methods = ast
+        .items
+        .iter()
+        .filter_map(|x| {
+            if let syn::ImplItem::Method(method) = x {
+                let vis = &method.vis;
+                let sig = &method.sig;
+                let fn_name = &sig.ident;
+                let is_mut = method.sig.inputs.iter().find_map(|arg| {
+                    if let syn::FnArg::Receiver(arg) = arg {
+                        Some(arg)
+                    } else {
+                        None
+                    }
+                });
+                if is_mut.is_none() {
+                    return None;
+                }
+                let is_mut = is_mut.map(|arg| arg.mutability.is_some()).unwrap();
+                let non_self_args = sig
+                    .inputs
+                    .iter()
+                    .filter_map(|arg| {
+                        if let syn::FnArg::Typed(arg) = arg {
+                            Some(arg.pat.as_ref())
+                        } else {
+                            None
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                Some(if is_mut {
+                    quote! {
+                        #vis #sig {
+                            let mut this: #ident = std::mem::take(self).into();
+                            let out = this.#fn_name(#(#non_self_args,)*);
+                            *self = this.into();
+                            out
+                        }
+                    }
+                } else {
+                    quote! {
+                        #vis #sig {
+                            let this: #ident = self.clone().into();
+                            this.#fn_name(#(#non_self_args,)*)
+                        }
+                    }
+                })
+            } else {
+                None
+            }
+        })
+        .collect::<Vec<_>>();
+
+    {
+        quote! {
+            #ast
+
+            #[wasm_bindgen]
+            impl #out_ident {
+                #(#out_methods)*
+            }
+        }
+    }
+    .into()
+}

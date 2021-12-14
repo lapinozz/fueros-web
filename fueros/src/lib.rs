@@ -31,7 +31,7 @@ pub fn test() -> JsValue {
 
 #[cfg(test)]
 mod tests {
-    use fueros_derive::JsEnum;
+    use fueros_derive::{js_enum_impl, JsEnum};
     use wasm_bindgen::prelude::*;
 
     #[test]
@@ -42,18 +42,53 @@ mod tests {
             World { array: Vec<u32> },
         }
 
+        #[js_enum_impl(TestEnum)]
+        impl TestEnum {
+            pub fn add_if_hello(&mut self, n: u32) {
+                match self {
+                    TestEnum::Hello { number, .. } => *number += n,
+                    _ => {}
+                }
+            }
+
+            pub fn is_world(&self) -> bool {
+                matches!(self, TestEnum::World { .. })
+            }
+        }
+
         let original = TestEnum::Hello {
             number: 1,
             string: String::from("bruh"),
         };
 
-        let js: JsTestEnum = original.clone().into();
+        let mut js: JsTestEnum = original.clone().into();
 
         assert_eq!(js.variant, "Hello");
         assert_eq!(js.Hello_number, Some(1));
         assert_eq!(js.Hello_string, Some("bruh".to_string()));
 
-        let converted: TestEnum = js.into();
+        let converted: TestEnum = js.clone().into();
         assert_eq!(converted, original);
+
+        js.add_if_hello(5);
+        assert_eq!(js.Hello_number, Some(6));
+        assert_eq!(js.is_world(), false);
+    }
+
+    #[test]
+    fn test_unnamed_enum() {
+        #[derive(JsEnum, Clone)]
+        enum TestEnum {
+            Hello(u32, String),
+            World(Vec<u32>),
+        }
+
+        let original = TestEnum::Hello(1, String::from("bruh"));
+
+        let js: JsTestEnum = original.clone().into();
+
+        assert_eq!(js.variant, "Hello");
+        assert_eq!(js.Hello_0, Some(1));
+        assert_eq!(js.Hello_1, Some("bruh".to_string()));
     }
 }
