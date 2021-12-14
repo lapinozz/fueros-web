@@ -28,7 +28,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
                 }
             });
 
-        let from_match_cases = from_enum_match_caes(&variants, ident, &out_ident, is_unnamed);
+        let from_match_cases = from_enum_match_cases(&variants, ident, &out_ident, is_unnamed);
         let into_match_cases = from_js_match_cases(&variants, ident, is_unnamed);
         let accessors = generate_accessors(&variants);
         let variant_ctors = generate_variant_ctors(&variants);
@@ -169,7 +169,7 @@ fn generate_variant_data(input: &syn::DataEnum, is_unnamed: &mut bool) -> Vec<Va
         .collect()
 }
 
-fn from_enum_match_caes(
+fn from_enum_match_cases(
     variants: &[Variant],
     ident: &syn::Ident,
     out_ident: &syn::Ident,
