@@ -5,8 +5,12 @@ import Board from "./board";
 
 async function main() {
     window.Module = await import("../pkg/index.js").catch(console.error);
+    for(const prop of Object.getOwnPropertyNames(Module))
+    {
+    	window[prop] = Module[prop];
+    }
 
-    let e = window.Module.JsEdge.Set(10);
+    let e = JsEdge.Set(10);
 
     // this is a method on the rust enum
     e.change_player(5);
