@@ -82,7 +82,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
                     quote! {
                         #full_variant_ident(#(#field_names,)*) => {
                             #out_ident {
-                                variant: std::stringify!(#variant_ident),
+                                variant: std::stringify!(#variant_ident).to_string(),
                                 #(#fields,)*
                                 ..Default::default()
                             }
@@ -95,7 +95,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
                             ..
                         } => {
                             #out_ident {
-                                variant: std::stringify!(#variant_ident),
+                                variant: std::stringify!(#variant_ident).to_string(),
                                 #(#fields,)*
                                 ..Default::default()
                             }
@@ -144,13 +144,90 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             })
             .collect::<Vec<_>>();
 
+        let accessors = variants
+            .iter()
+            .map(|x| {
+                x.out_fields.iter().map(|(out_field, ty)| {
+                    let setter = quote::format_ident!("set_{}", out_field);
+                    quote! {
+                        #[wasm_bindgen(getter)]
+                        pub fn #out_field(&self) -> Option<#ty> {
+                            self.#out_field.clone()
+                        }
+
+                        #[wasm_bindgen(setter)]
+                        pub fn #setter(&mut self, x: Option<#ty>) {
+                            self.#out_field = x;
+                        }
+                    }
+                })
+            })
+            .flatten()
+            .collect::<Vec<_>>();
+
+        let variant_ctors = variants
+            .iter()
+            .map(|x| {
+                let variant_ident = quote::format_ident!("{}", x.name);
+                let params = x
+                    .out_fields
+                    .iter()
+                    .map(|(out_field, ty)| {
+                        quote! {
+                            #out_field: #ty
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                let fields = x
+                    .out_fields
+                    .iter()
+                    .map(|(out_field, _)| {
+                        quote! {
+                            #out_field: Some(#out_field)
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                quote! {
+                    pub fn #variant_ident(#(#params,)*) -> Self {
+                        Self {
+                            variant: std::stringify!(#variant_ident).to_string(),
+                            #(#fields,)*
+                            ..Default::default()
+                        }
+                    }
+                }
+            })
+            .collect::<Vec<_>>();
+
         {
             quote! {
                 #[wasm_bindgen]
                 #[derive(Default, Clone)]
                 pub struct #out_ident {
-                    pub variant: &'static str,
+                    variant: String,
                     #(#out_fields,)*
+                }
+
+                #[wasm_bindgen]
+                impl #out_ident {
+                    #[wasm_bindgen(constructor)]
+                    pub fn new() -> Self {
+                        Default::default()
+                    }
+
+                    #(#variant_ctors)*
+
+                    #[wasm_bindgen(getter)]
+                    pub fn variant(&self) -> String {
+                        self.variant.clone()
+                    }
+
+                    #[wasm_bindgen(setter)]
+                    pub fn set_variant(&mut self, variant: String) {
+                        self.variant = variant;
+                    }
+
+                    #(#accessors)*
                 }
 
                 impl From<#ident> for #out_ident {
@@ -163,7 +240,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
 
                 impl From<#out_ident> for #ident {
                     fn from(e: #out_ident) -> #ident {
-                        match e.variant {
+                        match &e.variant[..] {
                             #(#into_match_cases)*
                             _ => panic!("invalid JsEnum variant '{}'", &e.variant),
                         }

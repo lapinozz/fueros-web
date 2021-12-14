@@ -2,10 +2,14 @@ extern crate proc_macro;
 
 use {proc_macro::TokenStream, quote::quote};
 
-pub fn js_enum_impl(attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn js_enum_impl(input: TokenStream) -> TokenStream {
     let ast: syn::ItemImpl = syn::parse(input).unwrap();
-    let ident = quote::format_ident!("{}", attr.to_string());
-    let out_ident = quote::format_ident!("Js{}", attr.to_string());
+    let ident = if let syn::Type::Path(path) = &*ast.self_ty {
+        path.path.get_ident().unwrap()
+    } else {
+        panic!("this ain't no enum impl")
+    };
+    let out_ident = quote::format_ident!("Js{}", ident);
     let out_methods = ast
         .items
         .iter()

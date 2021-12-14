@@ -9,6 +9,6 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
 }
 
 #[proc_macro_attribute]
-pub fn js_enum_impl(attr: TokenStream, input: TokenStream) -> TokenStream {
-    js_enum_impl::js_enum_impl(attr, input)
+pub fn js_enum_impl(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    js_enum_impl::js_enum_impl(input)
 }

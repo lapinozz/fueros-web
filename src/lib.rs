@@ -1,3 +1,4 @@
+use fueros_derive::{js_enum_impl, JsEnum};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -23,6 +24,25 @@ pub fn main_js() -> Result<(), JsValue> {
     Ok(())
 }
 
+#[derive(JsEnum)]
+pub enum Edge {
+    Set { player_idx: u32 },
+    Unset,
+}
+
+#[js_enum_impl]
+impl Edge {
+    pub fn is_set(&self) -> bool {
+        matches!(self, Edge::Set { .. })
+    }
+
+    pub fn change_player(&mut self, new_player_idx: u32) {
+        if let Edge::Set { player_idx } = self {
+            *player_idx = new_player_idx;
+        }
+    }
+}
+
 #[wasm_bindgen()]
 pub fn test() -> JsValue {
     // Your code goes here!
@@ -31,8 +51,7 @@ pub fn test() -> JsValue {
 
 #[cfg(test)]
 mod tests {
-    use fueros_derive::{js_enum_impl, JsEnum};
-    use wasm_bindgen::prelude::*;
+    use super::*;
 
     #[test]
     fn test_js_enum() {
@@ -90,5 +109,23 @@ mod tests {
         assert_eq!(js.variant, "Hello");
         assert_eq!(js.Hello_0, Some(1));
         assert_eq!(js.Hello_1, Some("bruh".to_string()));
+    }
+
+    #[test]
+    fn test_accessor() {
+        #[derive(JsEnum)]
+        enum TestEnum {
+            Hello { number: u32, string: String },
+        }
+
+        let original = TestEnum::Hello {
+            number: 5,
+            string: String::from("bruh"),
+        };
+
+        let js: JsTestEnum = original.into();
+
+        assert_eq!(js.Hello_number(), Some(5));
+        assert_eq!(js.Hello_string(), Some(String::from("bruh")));
     }
 }
