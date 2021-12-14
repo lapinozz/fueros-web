@@ -1,9 +1,7 @@
+use fueros_derive::JsEnum;
 use wasm_bindgen::prelude::wasm_bindgen;
 
-use crate::{
-    player::{PlayerId, SYSTEM_PLAYER_ID},
-    util::Vector2i,
-};
+use crate::{player::PlayerId, util::Vector2i};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum EdgeValue {
@@ -11,6 +9,7 @@ pub enum EdgeValue {
     Unset,
 }
 
+#[derive(JsEnum)]
 pub enum Edge {
     /// A horizontal edge. A board has `width` of these horizontally and `height+1` vertically.
     Horizontal { x: usize, y: usize },
@@ -40,20 +39,20 @@ impl Board {
         let mut horizontal_edges = vec![EdgeValue::Unset; width * (height + 1)];
         let mut vertical_edges = vec![EdgeValue::Unset; (width + 1) * height];
         for i in 0..width {
-            horizontal_edges[i] = EdgeValue::Set(SYSTEM_PLAYER_ID);
+            horizontal_edges[i] = EdgeValue::Set(PlayerId::System);
         }
         for i in width * (height - 1)..width * (height + 1) {
-            horizontal_edges[i] = EdgeValue::Set(SYSTEM_PLAYER_ID);
+            horizontal_edges[i] = EdgeValue::Set(PlayerId::System);
         }
         vertical_edges
             .iter_mut()
             .step_by(width + 1)
-            .for_each(|x| *x = EdgeValue::Set(SYSTEM_PLAYER_ID));
+            .for_each(|x| *x = EdgeValue::Set(PlayerId::System));
         vertical_edges
             .iter_mut()
             .skip(width)
             .step_by(width + 1)
-            .for_each(|x| *x = EdgeValue::Set(SYSTEM_PLAYER_ID));
+            .for_each(|x| *x = EdgeValue::Set(PlayerId::System));
 
         Self {
             width,
@@ -82,10 +81,25 @@ impl Board {
         })
     }
 
+    pub fn set_edge(&mut self, edge: &Edge, value: EdgeValue) -> Result<(), ()> {
+        self.is_edge_valid(edge)
+            .then(|| match edge {
+                Edge::Horizontal { x, y } => self.horizontal_edges[x + y * self.width] = value,
+                Edge::Vertical { x, y } => self.vertical_edges[x + y * (self.width + 1)] = value,
+            })
+            .ok_or(())
+    }
+
     /// Gets the value of a given cell of the board, if it exists.
     pub fn get_cell(&self, pos: Vector2i) -> Option<Cell> {
         self.is_cell_valid(pos)
             .then(|| self.cells[(pos.x + pos.y * self.width as i32) as usize])
+    }
+
+    pub fn set_cell(&mut self, pos: Vector2i, value: Cell) -> Result<(), ()> {
+        self.is_cell_valid(pos)
+            .then(|| self.cells[(pos.x + pos.y * self.width as i32) as usize] = value)
+            .ok_or(())
     }
 
     /// Checks if a given edge is valid in this board, i.e. exists within it.

@@ -33,7 +33,7 @@ impl Mul for Vector2i {
 
 impl Vector2i {
     pub const ZERO: Self = Vector2i { x: 0, y: 0 };
-    pub const ONE: Self = Vector2i { x: 0, y: 0 };
+    pub const ONE: Self = Vector2i { x: 1, y: 1 };
 
     pub const X_AXIS: Self = Vector2i { x: 1, y: 0 };
     pub const Y_AXIS: Self = Vector2i { x: 0, y: 1 };
