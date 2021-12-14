@@ -3,7 +3,7 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{player::PlayerId, util::Vector2i};
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, JsEnum)]
 pub enum EdgeValue {
     Set(PlayerId),
     Unset,
@@ -17,7 +17,7 @@ pub enum Edge {
     Vertical { x: usize, y: usize },
 }
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Clone, Copy, PartialEq, Eq, JsEnum)]
 pub enum Cell {
     Claimed(PlayerId),
     Unclaimed,
@@ -32,6 +32,7 @@ pub struct Board {
     height: usize,
 }
 
+#[wasm_bindgen]
 impl Board {
     /// Constructs a board with a given size.
     pub fn with_size(width: usize, height: usize) -> Self {

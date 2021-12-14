@@ -1,11 +1,14 @@
-use std::num::NonZeroU8;
+use wasm_bindgen::prelude::wasm_bindgen;
 
-#[derive(Clone, Copy, PartialEq, Eq)]
+use fueros_derive::JsEnum;
+
+#[derive(Clone, Copy, PartialEq, Eq, JsEnum)]
 pub enum PlayerId {
-    Real(NonZeroU8),
-    System
+    Real(u8),
+    System,
 }
 
+#[derive(JsEnum)]
 pub enum Player {
     Bot { username: String },
     User { username: String },
