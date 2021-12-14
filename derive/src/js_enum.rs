@@ -2,10 +2,17 @@ extern crate proc_macro;
 
 use {proc_macro::TokenStream, proc_macro2::TokenStream as TokenStream2, quote::quote};
 
+enum VariantForm {
+    Unit,
+    Unnamed,
+    Named,
+}
+
 struct Variant {
     name: String,
     in_fields: Vec<syn::Ident>,
     out_fields: Vec<(syn::Ident, syn::Type)>,
+    form: VariantForm,
 }
 
 pub fn js_enum(input: TokenStream) -> TokenStream {
@@ -14,8 +21,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
     if let syn::Data::Enum(enum_data) = &ast.data {
         let ident = &ast.ident;
 
-        let mut is_unnamed = false;
-        let variants = generate_variant_data(enum_data, &mut is_unnamed);
+        let variants = generate_variant_data(enum_data);
 
         let out_ident = quote::format_ident!("Js{}", ident);
         let out_fields = variants
@@ -28,8 +34,8 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
                 }
             });
 
-        let from_match_cases = from_enum_match_cases(&variants, ident, &out_ident, is_unnamed);
-        let into_match_cases = from_js_match_cases(&variants, ident, is_unnamed);
+        let from_match_cases = from_enum_match_cases(&variants, ident, &out_ident);
+        let into_match_cases = from_js_match_cases(&variants, ident);
         let accessors = generate_accessors(&variants);
         let variant_ctors = generate_variant_ctors(&variants);
 
@@ -128,7 +134,7 @@ fn generate_variant_ctors(variants: &[Variant]) -> Vec<TokenStream2> {
         .collect()
 }
 
-fn generate_variant_data(input: &syn::DataEnum, is_unnamed: &mut bool) -> Vec<Variant> {
+fn generate_variant_data(input: &syn::DataEnum) -> Vec<Variant> {
     input
         .variants
         .iter()
@@ -141,9 +147,6 @@ fn generate_variant_data(input: &syn::DataEnum, is_unnamed: &mut bool) -> Vec<Va
                     .iter()
                     .enumerate()
                     .map(|(i, x)| {
-                        if x.ident.is_none() {
-                            *is_unnamed = true;
-                        }
                         x.ident
                             .clone()
                             .unwrap_or_else(|| quote::format_ident!("x{}", i))
@@ -164,6 +167,11 @@ fn generate_variant_data(input: &syn::DataEnum, is_unnamed: &mut bool) -> Vec<Va
                         )
                     })
                     .collect(),
+                form: match &variant.fields {
+                    syn::Fields::Unit => VariantForm::Unit,
+                    syn::Fields::Unnamed(_) => VariantForm::Unnamed,
+                    syn::Fields::Named(_) => VariantForm::Named,
+                },
             }
         })
         .collect()
@@ -173,26 +181,33 @@ fn from_enum_match_cases(
     variants: &[Variant],
     ident: &syn::Ident,
     out_ident: &syn::Ident,
-    is_unnamed: bool,
 ) -> Vec<TokenStream2> {
     variants
         .iter()
-        .map(|x| {
-            let variant_ident = quote::format_ident!("{}", x.name);
+        .map(|variant| {
+            let variant_ident = quote::format_ident!("{}", variant.name);
             let full_variant_ident = quote! { #ident::#variant_ident };
-            let field_names = &x.in_fields;
-            let fields = x
+            let field_names = &variant.in_fields;
+            let fields = variant
                 .in_fields
                 .iter()
-                .zip(x.out_fields.iter())
+                .zip(variant.out_fields.iter())
                 .map(|(in_field, (out_field, _))| {
                     quote! {
                         #out_field: Some(#in_field)
                     }
                 })
                 .collect::<Vec<_>>();
-            if is_unnamed {
-                quote! {
+            match &variant.form {
+                VariantForm::Unit => quote! {
+                    #full_variant_ident => {
+                        Self {
+                            variant: std::stringify!(#variant_ident).to_string(),
+                            ..Default::default()
+                        }
+                    }
+                },
+                VariantForm::Unnamed => quote! {
                     #full_variant_ident(#(#field_names,)*) => {
                         #out_ident {
                             variant: std::stringify!(#variant_ident).to_string(),
@@ -200,9 +215,8 @@ fn from_enum_match_cases(
                             ..Default::default()
                         }
                     }
-                }
-            } else {
-                quote! {
+                },
+                VariantForm::Named => quote! {
                     #full_variant_ident {
                         #(#field_names,)*
                         ..
@@ -213,52 +227,50 @@ fn from_enum_match_cases(
                             ..Default::default()
                         }
                     }
-                }
+                },
             }
         })
         .collect()
 }
 
-fn from_js_match_cases(
-    variants: &[Variant],
-    ident: &syn::Ident,
-    is_unnamed: bool,
-) -> Vec<TokenStream2> {
+fn from_js_match_cases(variants: &[Variant], ident: &syn::Ident) -> Vec<TokenStream2> {
     variants
         .iter()
-        .map(|x| {
-            let variant_name = &x.name;
-            let variant_ident = quote::format_ident!("{}", x.name);
-            let fields = x
+        .map(|variant| {
+            let variant_name = &variant.name;
+            let variant_ident = quote::format_ident!("{}", variant.name);
+            let fields = variant
                 .in_fields
                 .iter()
-                .zip(x.out_fields.iter())
-                .map(|(in_field, (out_field, _))| {
-                    if is_unnamed {
-                        quote! {
-                            e.#out_field.unwrap()
-                        }
-                    } else {
-                        quote! {
-                            #in_field: e.#out_field.unwrap()
-                        }
-                    }
+                .zip(variant.out_fields.iter())
+                .map(|(in_field, (out_field, _))| match &variant.form {
+                    VariantForm::Unit => Default::default(),
+                    VariantForm::Unnamed => quote! {
+                        e.#out_field.unwrap()
+                    },
+                    VariantForm::Named => quote! {
+                        #in_field: e.#out_field.unwrap()
+                    },
                 })
                 .collect::<Vec<_>>();
-            if is_unnamed {
-                quote! {
+            match &variant.form {
+                VariantForm::Unit => quote! {
+                    #variant_name => {
+                        #ident::#variant_ident
+                    }
+                },
+                VariantForm::Unnamed => quote! {
                     #variant_name => {
                         #ident::#variant_ident(#(#fields,)*)
                     }
-                }
-            } else {
-                quote! {
+                },
+                VariantForm::Named => quote! {
                     #variant_name => {
                         #ident::#variant_ident {
                             #(#fields,)*
                         }
                     }
-                }
+                },
             }
         })
         .collect()

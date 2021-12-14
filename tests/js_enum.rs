@@ -8,43 +8,19 @@ mod tests {
     #[test]
     fn test_js_enum_conversion() {
         #[derive(JsEnum, Clone, Debug, PartialEq)]
-        enum NamedEnum {
+        enum Enum {
             First { value: i32 },
-            Second { a: i32, b: String },
+            Second(i32),
+            Third,
         }
 
-        #[derive(JsEnum, Clone, Debug, PartialEq)]
-        enum UnnamedEnum {
-            First(i32),
-            Second(i32, String),
-        }
+        let first = Enum::First { value: 1 };
+        let second = Enum::Second(1);
+        let third = Enum::Third;
 
-        let named_first = NamedEnum::First { value: 1 };
-        let named_second = NamedEnum::Second {
-            a: 1,
-            b: String::from("test"),
-        };
-
-        assert_eq!(
-            named_first.clone(),
-            NamedEnum::from(JsNamedEnum::from(named_first))
-        );
-        assert_eq!(
-            named_second.clone(),
-            NamedEnum::from(JsNamedEnum::from(named_second))
-        );
-
-        let unnamed_first = UnnamedEnum::First(1);
-        let unnamed_second = UnnamedEnum::Second(1, String::from("test"));
-
-        assert_eq!(
-            unnamed_first.clone(),
-            UnnamedEnum::from(JsUnnamedEnum::from(unnamed_first))
-        );
-        assert_eq!(
-            unnamed_second.clone(),
-            UnnamedEnum::from(JsUnnamedEnum::from(unnamed_second))
-        );
+        assert_eq!(first.clone(), Enum::from(JsEnum::from(first)));
+        assert_eq!(second.clone(), Enum::from(JsEnum::from(second)));
+        assert_eq!(third.clone(), Enum::from(JsEnum::from(third)));
     }
 
     #[test]
