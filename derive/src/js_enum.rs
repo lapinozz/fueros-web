@@ -48,7 +48,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             .flatten()
             .map(|(ident, ty)| {
                 quote! {
-                    pub #ident: Option<#ty>
+                    #ident: Option<#ty>
                 }
             });
 
@@ -83,8 +83,34 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             })
             .collect::<Vec<_>>();
 
+        let into_match_cases = variants
+            .iter()
+            .map(|x| {
+                let variant_name = &x.name;
+                let variant_ident = quote::format_ident!("{}", x.name);
+                let fields = x
+                    .in_fields
+                    .iter()
+                    .zip(x.out_fields.iter())
+                    .map(|(in_field, (out_field, _))| {
+                        quote! {
+                            #in_field: e.#out_field.unwrap()
+                        }
+                    })
+                    .collect::<Vec<_>>();
+                quote! {
+                    #variant_name => {
+                        #ident::#variant_ident {
+                            #(#fields,)*
+                        }
+                    }
+                }
+            })
+            .collect::<Vec<_>>();
+
         {
             quote! {
+                #[wasm_bindgen]
                 #[derive(Default)]
                 pub struct #out_ident {
                     pub variant: &'static str,
@@ -95,6 +121,15 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
                     fn from(e: #ident) -> #out_ident {
                         match e {
                             #(#from_match_cases)*
+                        }
+                    }
+                }
+
+                impl From<#out_ident> for #ident {
+                    fn from(e: #out_ident) -> #ident {
+                        match e.variant {
+                            #(#into_match_cases)*
+                            _ => panic!("invalid JsEnum variant '{}'", &e.variant),
                         }
                     }
                 }

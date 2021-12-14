@@ -32,13 +32,14 @@ pub fn test() -> JsValue {
 #[cfg(test)]
 mod tests {
     use fueros_derive::JsEnum;
+    use wasm_bindgen::prelude::*;
 
     #[test]
     fn test_js_enum() {
-        #[derive(JsEnum)]
+        #[derive(JsEnum, Clone, Debug, PartialEq)]
         enum TestEnum {
             Hello { number: u32, string: String },
-            World { array: [u32; 16] },
+            World { array: Vec<u32> },
         }
 
         let original = TestEnum::Hello {
@@ -46,10 +47,13 @@ mod tests {
             string: String::from("bruh"),
         };
 
-        let js: JsTestEnum = original.into();
+        let js: JsTestEnum = original.clone().into();
 
         assert_eq!(js.variant, "Hello");
         assert_eq!(js.Hello_number, Some(1));
         assert_eq!(js.Hello_string, Some("bruh".to_string()));
+
+        let converted: TestEnum = js.into();
+        assert_eq!(converted, original);
     }
 }
