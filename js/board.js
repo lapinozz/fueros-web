@@ -15,57 +15,66 @@ class Board extends Array2D
             this[x][y] = Math.floor(Math.random() * 3);
         });
 
-        const graphics = new PIXI.Graphics();
+        const caseGraphics = new PIXI.Graphics();
+        const backEdgeGraphics = new PIXI.Graphics();
+        const frontEdgeGraphics = new PIXI.Graphics();
+
+        this.app.stage.addChild(caseGraphics);
+        this.app.stage.addChild(backEdgeGraphics);
+        this.app.stage.addChild(frontEdgeGraphics);
 
         const caseColors = [0xff0000, 0x0000ff, 0x00ff00];
-        const caseSize = 40;
+        const caseSize = 50;
         this.forEach((v, x, y) => {
-            graphics.beginFill(caseColors[this[x][y]]);
-            graphics.drawRect(caseSize * x, caseSize * y, caseSize, caseSize);
-            graphics.endFill();
+            caseGraphics.beginFill(caseColors[this[x][y]]);
+            caseGraphics.drawRect(caseSize * x, caseSize * y, caseSize, caseSize);
+            caseGraphics.endFill();
         });
 
         console.log(this);
 
-        const edgeSize = 5;
+        const edgeSize = 4;
+        const halfEdge = edgeSize / 2;
+        const round = halfEdge;
+
+        const backEdgeColor = 0x404040;
+        const frontEdgeColor = 0;
+
+        const drawEdge = (x, y, horizontal = true) => 
+        {
+            if(horizontal ? y >= this.y : x >= this.x)
+            {
+                return;
+            }
+
+            const dh = horizontal ? 1 : 0;
+            const dv = horizontal ? 0 : 1;
+
+            const inBound = this.inBounds(x - dh, y - dv, 1 + dh, 1 + dv);
+            const isSame = inBound && this[x - dh][y - dv] == this[x][y];
+            const isDefault = isSame && this[x][y] == 0;
+
+            if (!isSame || isDefault) {
+                const graphics = isDefault ? backEdgeGraphics : frontEdgeGraphics;
+                graphics.beginFill(isDefault ? backEdgeColor : frontEdgeColor);
+                graphics.drawRoundedRect(
+                    caseSize * x - halfEdge,
+                    caseSize * y - halfEdge,
+                    edgeSize + caseSize * dv,
+                    edgeSize + caseSize * dh,
+                    round
+                );
+                graphics.endFill();
+            }
+        };
+
         for (let x = 0; x <= this.x; x++) {
             for (let y = 0; y <= this.y; y++) {
-                if (y < this.y) {
-                    const inBound = this.inBounds(x - 1, y, 2, 1);
-                    const isSame = inBound && this[x - 1][y] == this[x][y];
-                    const isDefault = isSame && this[x][y] == 0;
-
-                    if (!isSame || isDefault) {
-                        graphics.beginFill(isDefault ? 0x404040 : 0);
-                        graphics.drawRect(
-                            caseSize * x - edgeSize / 2,
-                            caseSize * y,
-                            edgeSize,
-                            caseSize
-                        );
-                        graphics.endFill();
-                    }
-                }
-                if (x < this.x) {
-                    const inBound = this.inBounds(x, y - 1, 1, 1);
-                    const isSame = inBound && this[x][y - 1] == this[x][y];
-                    const isDefault = isSame && this[x][y] == 0;
-
-                    if (!isSame || isDefault) {
-                        graphics.beginFill(isDefault ? 0x404040 : 0);
-                        graphics.drawRect(
-                            caseSize * x,
-                            caseSize * y - edgeSize / 2,
-                            caseSize,
-                            edgeSize
-                        );
-                        graphics.endFill();
-                    }
-                }
+                drawEdge(x, y, false);
+                drawEdge(x, y, true);
             }
         }
 
-        this.app.stage.addChild(graphics);
     }
 };
 
