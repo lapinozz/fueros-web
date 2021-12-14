@@ -1,4 +1,8 @@
-use fueros_derive::{js_enum_impl, JsEnum};
+pub mod board;
+pub mod game;
+pub mod player;
+pub mod util;
+
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
@@ -22,29 +26,4 @@ pub fn main_js() -> Result<(), JsValue> {
     console::log_1(&JsValue::from_str("Hello my world!"));
 
     Ok(())
-}
-
-#[derive(JsEnum)]
-pub enum Edge {
-    Set { player_idx: u32 },
-    Unset,
-}
-
-#[js_enum_impl]
-impl Edge {
-    pub fn is_set(&self) -> bool {
-        matches!(self, Edge::Set { .. })
-    }
-
-    pub fn change_player(&mut self, new_player_idx: u32) {
-        if let Edge::Set { player_idx } = self {
-            *player_idx = new_player_idx;
-        }
-    }
-}
-
-#[wasm_bindgen()]
-pub fn test() -> JsValue {
-    // Your code goes here!
-    JsValue::from_str("Hello my world!")
 }
