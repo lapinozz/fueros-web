@@ -8,42 +8,6 @@ struct Variant {
     out_fields: Vec<(syn::Ident, syn::Type)>,
 }
 
-fn generate_variant_ctors(variants: &[Variant]) -> Vec<TokenStream2> {
-    variants
-        .iter()
-        .map(|x| {
-            let variant_ident = quote::format_ident!("{}", x.name);
-            let params = x
-                .out_fields
-                .iter()
-                .map(|(out_field, ty)| {
-                    quote! {
-                        #out_field: #ty
-                    }
-                })
-                .collect::<Vec<_>>();
-            let fields = x
-                .out_fields
-                .iter()
-                .map(|(out_field, _)| {
-                    quote! {
-                        #out_field: Some(#out_field)
-                    }
-                })
-                .collect::<Vec<_>>();
-            quote! {
-                pub fn #variant_ident(#(#params,)*) -> Self {
-                    Self {
-                        variant: std::stringify!(#variant_ident).to_string(),
-                        #(#fields,)*
-                        ..Default::default()
-                    }
-                }
-            }
-        })
-        .collect()
-}
-
 pub fn js_enum(input: TokenStream) -> TokenStream {
     let ast: syn::DeriveInput = syn::parse(input).unwrap();
 
@@ -126,6 +90,42 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
     } else {
         panic!("JsEnum only works on enums bozo #getreal #getsmart #geteducated xDDD")
     }
+}
+
+fn generate_variant_ctors(variants: &[Variant]) -> Vec<TokenStream2> {
+    variants
+        .iter()
+        .map(|x| {
+            let variant_ident = quote::format_ident!("{}", x.name);
+            let params = x
+                .out_fields
+                .iter()
+                .map(|(out_field, ty)| {
+                    quote! {
+                        #out_field: #ty
+                    }
+                })
+                .collect::<Vec<_>>();
+            let fields = x
+                .out_fields
+                .iter()
+                .map(|(out_field, _)| {
+                    quote! {
+                        #out_field: Some(#out_field)
+                    }
+                })
+                .collect::<Vec<_>>();
+            quote! {
+                pub fn #variant_ident(#(#params,)*) -> Self {
+                    Self {
+                        variant: std::stringify!(#variant_ident).to_string(),
+                        #(#fields,)*
+                        ..Default::default()
+                    }
+                }
+            }
+        })
+        .collect()
 }
 
 fn generate_variant_data(input: &syn::DataEnum, is_unnamed: &mut bool) -> Vec<Variant> {
