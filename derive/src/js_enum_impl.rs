@@ -4,11 +4,13 @@ use {proc_macro::TokenStream, quote::quote};
 
 pub fn js_enum_impl(input: TokenStream) -> TokenStream {
     let ast: syn::ItemImpl = syn::parse(input).unwrap();
+
     let ident = if let syn::Type::Path(path) = &*ast.self_ty {
         path.path.get_ident().unwrap()
     } else {
         panic!("this ain't no enum impl")
     };
+
     let out_ident = quote::format_ident!("Js{}", ident);
     let out_methods = ast
         .items
@@ -18,17 +20,21 @@ pub fn js_enum_impl(input: TokenStream) -> TokenStream {
                 let vis = &method.vis;
                 let sig = &method.sig;
                 let fn_name = &sig.ident;
-                let is_mut = method.sig.inputs.iter().find_map(|arg| {
-                    if let syn::FnArg::Receiver(arg) = arg {
-                        Some(arg)
-                    } else {
-                        None
-                    }
-                });
-                if is_mut.is_none() {
-                    return None;
-                }
-                let is_mut = is_mut.map(|arg| arg.mutability.is_some()).unwrap();
+
+                let is_mut = method
+                    .sig
+                    .inputs
+                    .iter()
+                    .find_map(|arg| {
+                        if let syn::FnArg::Receiver(arg) = arg {
+                            Some(arg)
+                        } else {
+                            None
+                        }
+                    })?
+                    .mutability
+                    .is_some();
+
                 let non_self_args = sig
                     .inputs
                     .iter()
@@ -40,6 +46,7 @@ pub fn js_enum_impl(input: TokenStream) -> TokenStream {
                         }
                     })
                     .collect::<Vec<_>>();
+
                 Some(if is_mut {
                     quote! {
                         #vis #sig {
@@ -67,6 +74,7 @@ pub fn js_enum_impl(input: TokenStream) -> TokenStream {
         quote! {
             #ast
 
+            #[allow(non_snake_case)]
             #[wasm_bindgen]
             impl #out_ident {
                 #(#out_methods)*
