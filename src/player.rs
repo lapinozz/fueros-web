@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::{prelude::wasm_bindgen, describe::WasmDescribe, convert::{IntoWasmAbi, FromWasmAbi}, JsValue};
-
+use wasm_bindgen::{
+    convert::{FromWasmAbi, IntoWasmAbi},
+    describe::WasmDescribe,
+    JsValue,
+};
 
 #[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlayerId {
@@ -12,6 +15,26 @@ pub enum PlayerId {
 pub enum Player {
     Bot { username: String },
     User { username: String },
+}
+
+// TODO: Derive macro for this module, and the Wasm traits
+mod wasm_impl {
+    use super::PlayerId;
+    use wasm_bindgen::prelude::wasm_bindgen;
+
+    #[wasm_bindgen]
+    #[allow(non_snake_case)]
+    impl PlayerId {
+        #[wasm_bindgen(js_name = Real)]
+        pub fn _real(x: u8) -> Self {
+            PlayerId::Real(x)
+        }
+
+        #[wasm_bindgen(js_name = System)]
+        pub fn _system() -> Self {
+            PlayerId::System
+        }
+    }
 }
 
 impl WasmDescribe for PlayerId {
@@ -37,4 +60,3 @@ impl FromWasmAbi for PlayerId {
             .expect("Couldn't obtain valid PlayerId from JS object representation")
     }
 }
-
