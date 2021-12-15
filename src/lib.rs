@@ -1,14 +1,7 @@
-use fueros_derive::{js_enum_impl, JsEnum};
+use fueros_derive::js_enum_impl;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
-
-// When the `wee_alloc` feature is enabled, this uses `wee_alloc` as the global
-// allocator.
-//
-// If you don't want to use `wee_alloc`, you can safely delete this.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
@@ -24,9 +17,11 @@ pub fn main_js() -> Result<(), JsValue> {
     Ok(())
 }
 
-#[derive(JsEnum)]
+#[derive(Deserialize, Serialize)]
 pub enum Edge {
+    #[serde(rename_all = "camelCase")]
     Set { player_idx: u32 },
+    #[serde(rename_all = "camelCase")]
     Unset,
 }
 
@@ -36,9 +31,13 @@ impl Edge {
         matches!(self, Edge::Set { .. })
     }
 
-    pub fn change_player(&mut self, new_player_idx: u32) {
+    pub fn change_player(&mut self, new_player_idx: u32) -> u32 {
         if let Edge::Set { player_idx } = self {
+            let prev = *player_idx;
             *player_idx = new_player_idx;
+            prev
+        } else {
+            0
         }
     }
 }
