@@ -15,6 +15,7 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
 
     let accessors = generate_accessors(&ast);
     let metadata = generate_metadata(&ast);
+    let variant_accessor = generate_variant_accessor(&ast);
 
     TokenStream::from(quote! {
         #[wasm_bindgen::prelude::wasm_bindgen]
@@ -32,6 +33,8 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             #(#accessors)*
 
             #metadata
+
+            #variant_accessor
         }
 
         impl wasm_bindgen::describe::WasmDescribe for #name {
@@ -185,6 +188,28 @@ fn generate_metadata(ast: &syn::DeriveInput) -> TokenStream2 {
                 let mut __out_metadata: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
                 #(#insert_variant)*
                 wasm_bindgen::JsValue::from_serde(&__out_metadata).unwrap()
+            }
+        }
+    } else {
+        panic!("JsEnum only operates on enums")
+    }
+}
+
+fn generate_variant_accessor(ast: &syn::DeriveInput) -> TokenStream2 {
+    if let syn::Data::Enum(data) = &ast.data {
+        let match_cases = data.variants.iter().map(|variant| {
+            let variant_name = &variant.ident;
+            let variant_str = variant.ident.to_string();
+            quote! {
+                Self::#variant_name { .. } => String::from(#variant_str)
+            }
+        });
+
+        quote! {
+            pub fn __getVariant(&self) -> String {
+                match self {
+                    #(#match_cases,)*
+                }
             }
         }
     } else {
