@@ -124,45 +124,80 @@ fn generate_accessors(ast: &syn::DeriveInput) -> Vec<TokenStream2> {
             .iter()
             .map(|variant| {
                 variant.fields.iter().enumerate().map(|(i, field)| {
-                    let field_name = field
-                        .ident
-                        .as_ref()
-                        .map(|ident| ident.to_string())
-                        .unwrap_or_else(|| i.to_string());
-                    let field_name = syn::Ident::new(&field_name, proc_macro2::Span::call_site());
+                    field
+                    .ident
+                    .as_ref()
+                    .map(|ident| 
+                    {
+                        let field_name = ident.to_string();
+                        let field_name = syn::Ident::new(&field_name, proc_macro2::Span::call_site());
 
-                    let setter = quote::format_ident!(
-                        "__{}_set_{}",
-                        &variant.ident,
-                        camel_case(&field_name)
-                    );
+                        let setter = quote::format_ident!(
+                            "__{}_set_{}",
+                            &variant.ident,
+                            camel_case(&field_name)
+                        );
 
-                    let getter = quote::format_ident!(
-                        "__{}_get_{}",
-                        &variant.ident,
-                        camel_case(&field_name)
-                    );
+                        let getter = quote::format_ident!(
+                            "__{}_get_{}",
+                            &variant.ident,
+                            camel_case(&field_name)
+                        );
 
-                    let field_type = &field.ty;
-                    let variant_name = &variant.ident;
+                        let field_type = &field.ty;
+                        let variant_name = &variant.ident;
 
-                    quote! {
-                        pub fn #setter(&mut self, __value: #field_type) {
-                            if let Self::#variant_name { #field_name: __cur_value, .. } = self {
-                                *__cur_value = __value;
-                            } else {
-                                panic!("attempted to set field for a non-current variant");
+                        quote! {
+                            pub fn #setter(&mut self, __value: #field_type) {
+                                if let Self::#variant_name { #field_name: __cur_value, .. } = self {
+                                    *__cur_value = __value;
+                                } else {
+                                    panic!("attempted to set field for a non-current variant");
+                                }
+                            }
+
+                            pub fn #getter(&self) -> #field_type {
+                                if let Self::#variant_name { #field_name: __cur_value, .. } = self {
+                                    __cur_value.clone()
+                                } else {
+                                    panic!("attempted to get field for a non-current variant");
+                                }
                             }
                         }
+                    })
+                    .unwrap_or_else(|| 
+                    {
+                        let setter = quote::format_ident!(
+                            "__{}_set",
+                            &variant.ident
+                        );
 
-                        pub fn #getter(&self) -> #field_type {
-                            if let Self::#variant_name { #field_name: __cur_value, .. } = self {
-                                *__cur_value
-                            } else {
-                                panic!("attempted to get field for a non-current variant");
+                        let getter = quote::format_ident!(
+                            "__{}_get",
+                            &variant.ident
+                        );
+
+                        let field_type = &field.ty;
+                        let variant_name = &variant.ident;
+
+                        quote! {
+                            pub fn #setter(&mut self, __value: #field_type) {
+                                if let Self::#variant_name(__cur_value)  = self {
+                                    *__cur_value = __value;
+                                } else {
+                                    panic!("attempted to set field for a non-current variant");
+                                }   
+                            }
+
+                            pub fn #getter(&mut self, __value: #field_type) -> #field_type {
+                                if let Self::#variant_name(__cur_value)  = self {
+                                    __cur_value.clone()
+                                } else {
+                                    panic!("attempted to set field for a non-current variant");
+                                }   
                             }
                         }
-                    }
+                    })
                 })
             })
             .flatten()

@@ -1,4 +1,3 @@
-use fueros_derive::JsEnum;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
@@ -6,7 +5,7 @@ use fueros_derive::JsEnum;
 
 #[derive(Serialize, Deserialize, JsEnum, Clone, Copy, PartialEq, Eq)]
 pub enum PlayerId {
-    Real { id: u8 },
+    Real(u8),
     System,
 }
 
