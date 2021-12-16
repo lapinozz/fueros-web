@@ -1,56 +1,19 @@
+use fueros_derive::JsEnum;
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::{
-    convert::{FromWasmAbi, IntoWasmAbi, OptionFromWasmAbi, OptionIntoWasmAbi},
-    describe::WasmDescribe,
+    convert::{FromWasmAbi, IntoWasmAbi},
     prelude::wasm_bindgen,
-    JsValue,
 };
 
 use crate::{player::PlayerId, util::Vector2i};
 
-#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsEnum)]
 pub enum EdgeValue {
     Set(PlayerId),
     Unset,
 }
 
-impl WasmDescribe for EdgeValue {
-    fn describe() {
-        JsValue::describe()
-    }
-}
-
-impl IntoWasmAbi for EdgeValue {
-    type Abi = u32;
-
-    fn into_abi(self) -> Self::Abi {
-        JsValue::from_serde(&self).unwrap().into_abi()
-    }
-}
-
-impl FromWasmAbi for EdgeValue {
-    type Abi = u32;
-
-    unsafe fn from_abi(js: Self::Abi) -> Self {
-        JsValue::from_abi(js)
-            .into_serde()
-            .expect("Couldn't obtain valid EdgeValue from JS object representation")
-    }
-}
-
-impl OptionIntoWasmAbi for EdgeValue {
-    fn none() -> Self::Abi {
-        JsValue::null().into_abi()
-    }
-}
-
-impl OptionFromWasmAbi for EdgeValue {
-    fn is_none(abi: &Self::Abi) -> bool {
-        unsafe { JsValue::from_abi(*abi) }.is_null()
-    }
-}
-
-#[derive(Serialize, Deserialize, Clone, Copy)]
+#[derive(Serialize, Deserialize, Clone, Copy, JsEnum)]
 pub enum Edge {
     /// A horizontal edge. A board has `width` of these horizontally and `height+1` vertically.
     Horizontal { x: u16, y: u16 },
@@ -58,70 +21,10 @@ pub enum Edge {
     Vertical { x: u16, y: u16 },
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsEnum)]
 pub enum Cell {
     Claimed(PlayerId),
     Unclaimed,
-}
-
-impl WasmDescribe for Cell {
-    fn describe() {
-        JsValue::describe()
-    }
-}
-
-impl IntoWasmAbi for Cell {
-    type Abi = u32;
-
-    fn into_abi(self) -> Self::Abi {
-        JsValue::from_serde(&self).unwrap().into_abi()
-    }
-}
-
-impl FromWasmAbi for Cell {
-    type Abi = u32;
-
-    unsafe fn from_abi(js: Self::Abi) -> Self {
-        JsValue::from_abi(js)
-            .into_serde()
-            .expect("Couldn't obtain valid Cell from JS object representation")
-    }
-}
-
-impl OptionIntoWasmAbi for Cell {
-    fn none() -> Self::Abi {
-        JsValue::null().into_abi()
-    }
-}
-
-impl OptionFromWasmAbi for Cell {
-    fn is_none(abi: &Self::Abi) -> bool {
-        unsafe { JsValue::from_abi(*abi) }.is_null()
-    }
-}
-
-impl WasmDescribe for Edge {
-    fn describe() {
-        JsValue::describe()
-    }
-}
-
-impl IntoWasmAbi for Edge {
-    type Abi = u32;
-
-    fn into_abi(self) -> Self::Abi {
-        JsValue::from_serde(&self).unwrap().into_abi()
-    }
-}
-
-impl FromWasmAbi for Edge {
-    type Abi = u32;
-
-    unsafe fn from_abi(js: Self::Abi) -> Self {
-        JsValue::from_abi(js)
-            .into_serde()
-            .expect("Couldn't obtain valid Edge from JS object representation")
-    }
 }
 
 #[wasm_bindgen]
