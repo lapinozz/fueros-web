@@ -16,6 +16,11 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
     let accessors = generate_accessors(&ast);
     let metadata = generate_metadata(&ast);
     let variant_accessor = generate_variant_accessor(&ast);
+            
+    let free = quote::format_ident!(
+        "__wbg_{}_free",
+        name_str.to_lowercase()
+    );
 
     TokenStream::from(quote! {
         #[wasm_bindgen::prelude::wasm_bindgen]
@@ -35,6 +40,10 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             #metadata
 
             #variant_accessor
+        }
+
+        #[wasm_bindgen]
+        pub fn #free() {
         }
 
         impl wasm_bindgen::describe::WasmDescribe for #name {
