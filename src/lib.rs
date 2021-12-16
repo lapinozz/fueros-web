@@ -15,32 +15,7 @@ pub enum Values {
 }
 
 #[wasm_bindgen]
-impl Values {
-    pub fn first(value: i32) -> Self {
-        Values::First { value }
-    }
-
-    pub fn second() -> Self {
-        Values::Second
-    }
-}
-
-#[wasm_bindgen]
-impl Values {
-    pub fn set_value(&mut self, val: i32) -> i32 {
-        if let Values::First { value } = self {
-            let old = *value;
-            *value = val;
-            old
-        } else {
-            panic!()
-        }
-    }
-
-    pub fn is_second(&self) -> bool {
-        matches!(self, Values::Second)
-    }
-}
+impl Values {}
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
