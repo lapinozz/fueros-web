@@ -10,13 +10,11 @@ async function main() {
         window[prop] = Module[prop];
     }
 
-    test();
+    //test();
     menu();
 
     const board = new Board(10, 10);
     document.body.appendChild(board.app.view);
-
-
 }
 
 main();
