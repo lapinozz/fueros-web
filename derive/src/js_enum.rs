@@ -16,11 +16,8 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
     let accessors = generate_accessors(&ast);
     let metadata = generate_metadata(&ast);
     let variant_accessor = generate_variant_accessor(&ast);
-            
-    let free = quote::format_ident!(
-        "__wbg_{}_free",
-        name_str.to_lowercase()
-    );
+
+    let free = quote::format_ident!("__wbg_{}_free", name_str.to_lowercase());
 
     TokenStream::from(quote! {
         #[wasm_bindgen::prelude::wasm_bindgen]
@@ -42,8 +39,12 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             #variant_accessor
         }
 
-        #[wasm_bindgen]
-        pub fn #free() {
+        #[cfg(all(target_arch = "wasm32", not(target_os = "emscripten")))]
+        #[no_mangle]
+        #[doc(hidden)]
+        #[allow(clippy::all)]
+        pub unsafe extern "C" fn #free(ptr: u32) {
+            drop(<#name as wasm_bindgen::convert::FromWasmAbi>::from_abi(ptr));
         }
 
         impl wasm_bindgen::describe::WasmDescribe for #name {
