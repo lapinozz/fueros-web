@@ -178,13 +178,24 @@ fn generate_metadata(ast: &syn::DeriveInput) -> TokenStream2 {
         let insert_variant = data.variants.iter().map(|variant| {
             let variant_str = variant.ident.to_string();
             let field_names = variant.fields.iter().enumerate().map(|(i, field)| {
-                camel_case(
+                let mut field_name = camel_case(
                     &field
                         .ident
                         .as_ref()
                         .map(|ident| ident.to_string())
                         .unwrap_or_else(|| i.to_string()),
-                )
+                );
+
+                if field.attrs.iter().any(|attr| {
+                    attr.path
+                        .get_ident()
+                        .map(|ident| &ident.to_string() == "nested")
+                        .unwrap_or(false)
+                }) {
+                    field_name = format!("@{}", field_name);
+                }
+
+                field_name
             });
             quote! {
                 __out_metadata.insert(String::from(#variant_str), [

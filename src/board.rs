@@ -1,15 +1,12 @@
 use fueros_derive::JsEnum;
 use serde::{Deserialize, Serialize};
-use wasm_bindgen::{
-    convert::{FromWasmAbi, IntoWasmAbi},
-    prelude::wasm_bindgen,
-};
+use wasm_bindgen::prelude::wasm_bindgen;
 
 use crate::{player::PlayerId, util::Vector2i};
 
 #[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsEnum)]
 pub enum EdgeValue {
-    Set(PlayerId),
+    Set(#[nested] PlayerId),
     Unset,
 }
 
