@@ -1,6 +1,8 @@
 use fueros_derive::JsEnum;
 use serde::{Deserialize, Serialize};
 
+trait JsEnum {}
+
 #[test]
 fn test_js_enum() {
     #[derive(Serialize, Deserialize, JsEnum)]

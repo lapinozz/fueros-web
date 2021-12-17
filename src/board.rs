@@ -6,7 +6,7 @@ use crate::{player::PlayerId, util::Vector2i};
 
 #[derive(Clone, Copy, PartialEq, Eq, Serialize, Deserialize, JsEnum)]
 pub enum EdgeValue {
-    Set(#[nested] PlayerId),
+    Set(PlayerId),
     Unset,
 }
 

@@ -47,6 +47,8 @@ pub fn js_enum(input: TokenStream) -> TokenStream {
             drop(<#name as wasm_bindgen::convert::FromWasmAbi>::from_abi(ptr));
         }
 
+        impl crate::JsEnum for #name {}
+
         impl wasm_bindgen::describe::WasmDescribe for #name {
             fn describe() {
                 use wasm_bindgen::describe::*;
@@ -178,7 +180,8 @@ fn generate_metadata(ast: &syn::DeriveInput) -> TokenStream2 {
         let insert_variant = data.variants.iter().map(|variant| {
             let variant_str = variant.ident.to_string();
             let field_names = variant.fields.iter().enumerate().map(|(i, field)| {
-                let mut field_name = camel_case(
+                let field_type = &field.ty;
+                let field_name = camel_case(
                     &field
                         .ident
                         .as_ref()
@@ -186,20 +189,17 @@ fn generate_metadata(ast: &syn::DeriveInput) -> TokenStream2 {
                         .unwrap_or_else(|| i.to_string()),
                 );
 
-                if field.attrs.iter().any(|attr| {
-                    attr.path
-                        .get_ident()
-                        .map(|ident| &ident.to_string() == "nested")
-                        .unwrap_or(false)
-                }) {
-                    field_name = format!("@{}", field_name);
+                quote! {
+                    if impls::impls!(#field_type: crate::JsEnum) {
+                        format!("@{}", #field_name)
+                    } else {
+                        String::from(#field_name)
+                    }
                 }
-
-                field_name
             });
             quote! {
                 __out_metadata.insert(String::from(#variant_str), [
-                    #(String::from(#field_names),)*
+                    #(#field_names,)*
                 ].to_vec());
             }
         });

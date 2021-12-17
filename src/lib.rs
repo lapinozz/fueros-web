@@ -6,6 +6,9 @@ pub mod util;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
+/// Marker trait implemented by `derive(JsEnum)`. Ignore. Ignore. Do not look at the moon. Ignore. Ignore.
+pub trait JsEnum {}
+
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
 pub fn main_js() -> Result<(), JsValue> {
