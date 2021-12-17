@@ -56,6 +56,7 @@ module.exports = {
     plugins: [
         new WasmPackPlugin({
             crateDirectory: __dirname,
+            forceMode: "production",
         }),
         new HtmlWebpackPlugin({
             template: path.resolve(__dirname, "static", "index.html"),

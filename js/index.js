@@ -11,6 +11,15 @@ async function main() {
 
     menu();
 
+    let cbs = new window.Module.Callbacks();
+    cbs.set_edges((edges) => {
+        /* do something with edges */
+    });
+    let t1 = performance.now();
+    window.Module.run_game(cbs);
+    let t2 = performance.now();
+    console.log(`${t2 - t1} ms`);
+
     const board = new Board(10, 10);
     document.body.appendChild(board.app.view);
 }
