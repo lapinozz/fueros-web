@@ -1,7 +1,15 @@
+use memoffset::offset_of;
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-#[derive(Clone)]
+#[derive(Serialize, Deserialize)]
+pub struct MemoryField {
+    pub offset: u32,
+    pub size: u32,
+    pub ty: String,
+}
+
+#[repr(C, packed)]
 pub struct EdgeUpdate {
     pub x: i32,
     pub y: i32,
@@ -9,7 +17,43 @@ pub struct EdgeUpdate {
 }
 
 #[wasm_bindgen]
-struct Message {}
+impl EdgeUpdate {
+    pub fn metadata() -> JsValue {
+        JsValue::from_serde(&[
+            MemoryField {
+                offset: offset_of!(EdgeUpdate, x) as _,
+                size: 4,
+                ty: String::from("i32"),
+            },
+            MemoryField {
+                offset: offset_of!(EdgeUpdate, y) as _,
+                size: 4,
+                ty: String::from("i32"),
+            },
+            MemoryField {
+                offset: offset_of!(EdgeUpdate, set) as _,
+                size: 1,
+                ty: String::from("bool"),
+            },
+        ])
+        .unwrap()
+    }
+
+    pub fn size() -> u64 {
+        std::mem::size_of::<Self>() as u64
+    }
+}
+
+#[wasm_bindgen]
+pub fn shared_memory() -> JsValue {
+    wasm_bindgen::memory()
+}
+
+#[wasm_bindgen]
+struct RawSlice {
+    pub sptr: *const u8,
+    pub len: u64,
+}
 
 #[wasm_bindgen]
 pub struct Callbacks {
@@ -38,11 +82,10 @@ pub fn run_game(callbacks: Callbacks) {
                 .set_edges
                 .call1(
                     &JsValue::NULL,
-                    &edges
-                        .into_iter()
-                        .cloned()
-                        .map(JsValue::from)
-                        .collect::<js_sys::Array>(),
+                    &JsValue::from(RawSlice {
+                        sptr: edges.as_ptr() as *const u8,
+                        len: edges.len() as u64,
+                    }),
                 )
                 .unwrap();
         }),
@@ -61,11 +104,12 @@ impl Game {
             .into_iter()
             .map(|i| EdgeUpdate {
                 x: i,
-                y: i,
-                set: false,
+                y: i + 1,
+                set: i % 2 == 0,
             })
             .collect::<Vec<_>>();
-        (*self.set_edges)(&updates);
+        (*self.set_edges)(&*updates);
+        std::mem::forget(updates); // leak to give JS time to read (temporary fix obviously)
     }
 }
 

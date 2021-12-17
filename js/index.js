@@ -13,7 +13,7 @@ async function main() {
 
     let cbs = new window.Module.Callbacks();
     cbs.set_edges((edges) => {
-        /* do something with edges */
+        console.log(edges);
     });
     let t1 = performance.now();
     window.Module.run_game(cbs);
