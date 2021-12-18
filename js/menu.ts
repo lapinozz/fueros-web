@@ -1,10 +1,11 @@
 import * as ui from "./components";
+import * as feather from "feather-icons";
 
 export function menu() {
     let root = ui.centre(
         ui.vboxFill([
             ui.h1("Fueros"),
-            ui.h3("A dots and boxes game"),
+            ui.h3("A DOTS AND BOXES GAME"),
             ui.panel(
                 ui.hboxFill([
                     ui.vboxFill([
@@ -35,4 +36,5 @@ export function menu() {
     );
 
     document.body.appendChild(root);
+    feather.replace();
 }

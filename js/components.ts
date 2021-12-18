@@ -9,6 +9,19 @@ export function button() {
     return btn;
 }
 
+export function iconButton(iconName: string) {
+    let btn = document.createElement("button");
+    btn.classList.add("ui-icon-button");
+    btn.appendChild(icon(iconName));
+    return btn;
+}
+
+export function icon(iconName: string) {
+    let i = document.createElement("i");
+    i.setAttribute("data-feather", iconName);
+    return i;
+}
+
 export function input() {
     let input = document.createElement("input");
     input.classList.add("ui-input");
@@ -27,6 +40,13 @@ export function h3(text: string) {
     h3.classList.add("ui-h3");
     h3.innerHTML = text;
     return h3;
+}
+
+export function p(text: string) {
+    let p = document.createElement("p");
+    p.classList.add("ui-p");
+    p.innerHTML = text;
+    return p;
 }
 
 export function vboxFill(children: HTMLElement[]) {
@@ -51,9 +71,29 @@ export function hboxFill(children: HTMLElement[]) {
     return div;
 }
 
+export function filler() {
+    let div = document.createElement("div");
+    div.classList.add("ui-filler");
+    return div;
+}
+
+export function fill(child: HTMLElement) {
+    let div = document.createElement("div");
+    div.classList.add("ui-fill");
+    div.appendChild(child);
+    return div;
+}
+
 export function panel(child: HTMLElement) {
     let div = document.createElement("div");
     div.classList.add("ui-panel");
+    div.appendChild(child);
+    return div;
+}
+
+export function softPanel(child: HTMLElement) {
+    let div = document.createElement("div");
+    div.classList.add("ui-soft-panel");
     div.appendChild(child);
     return div;
 }
@@ -65,9 +105,14 @@ export function centre(child: HTMLElement) {
     return div;
 }
 
-export function margin(child: HTMLElement) {
+/// [top, right, bottom, left]
+export function margin(child: HTMLElement, margins: number[]) {
     let div = document.createElement("div");
     div.classList.add("ui-margin");
+    div.style.marginTop = String(margins[0]) + "px";
+    div.style.marginRight = String(margins[1]) + "px";
+    div.style.marginBottom = String(margins[2]) + "px";
+    div.style.marginLeft = String(margins[3]) + "px";
     div.appendChild(child);
     return div;
 }
