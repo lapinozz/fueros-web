@@ -9,14 +9,27 @@ async function main() {
 
     menu();
 
-    let cbs = new window.Module.Callbacks();
+    let cbs = new Callbacks();
+
+    let edgeUpdate;
+    let es;
+
     cbs.set_edges((edges) => {
-        console.log(edges);
+        const memory = new DataView(shared_memory().buffer);
+
+        const edgesPtr = memory.getUint32(edges.ptr + 4 + 0, true);
+        const edgesLen = memory.getUint32(edges.ptr + 4 + 4, true);
+        edgeUpdate = new EdgeUpdate(edgesPtr); 
+
+        es = new EdgeUpdateArray(edges.ptr); 
     });
+
     let t1 = performance.now();
-    window.Module.run_game(cbs);
+    run_game(cbs);
     let t2 = performance.now();
     console.log(`${t2 - t1} ms`);
+    console.log(edgeUpdate)
+    console.log(es)
 
     const board = new Board(10, 10);
     document.body.appendChild(board.app.view);

@@ -4,6 +4,7 @@ use wasm_bindgen::prelude::*;
 
 #[derive(Serialize, Deserialize)]
 pub struct MemoryField {
+    pub name: String,
     pub offset: u32,
     pub size: u32,
     pub ty: String,
@@ -21,16 +22,19 @@ impl EdgeUpdate {
     pub fn metadata() -> JsValue {
         JsValue::from_serde(&[
             MemoryField {
+                name: String::from("x"),
                 offset: offset_of!(EdgeUpdate, x) as _,
                 size: 4,
                 ty: String::from("i32"),
             },
             MemoryField {
+                name: String::from("y"),
                 offset: offset_of!(EdgeUpdate, y) as _,
                 size: 4,
                 ty: String::from("i32"),
             },
             MemoryField {
+                name: String::from("set"),
                 offset: offset_of!(EdgeUpdate, set) as _,
                 size: 1,
                 ty: String::from("bool"),
@@ -39,8 +43,8 @@ impl EdgeUpdate {
         .unwrap()
     }
 
-    pub fn size() -> u64 {
-        std::mem::size_of::<Self>() as u64
+    pub fn size() -> u32 {
+        std::mem::size_of::<Self>() as u32
     }
 }
 
@@ -51,8 +55,8 @@ pub fn shared_memory() -> JsValue {
 
 #[wasm_bindgen]
 struct RawSlice {
-    pub sptr: *const u8,
-    pub len: u64,
+    pub sptr: u32,
+    pub len: u32,
 }
 
 #[wasm_bindgen]
@@ -83,8 +87,8 @@ pub fn run_game(callbacks: Callbacks) {
                 .call1(
                     &JsValue::NULL,
                     &JsValue::from(RawSlice {
-                        sptr: edges.as_ptr() as *const u8,
-                        len: edges.len() as u64,
+                        sptr: edges.as_ptr() as u32,
+                        len: edges.len() as u32,
                     }),
                 )
                 .unwrap();
@@ -100,10 +104,10 @@ pub struct Game {
 
 impl Game {
     pub fn run(self) {
-        let updates = (0..100000)
+        let updates = (0..32*32*10)
             .into_iter()
             .map(|i| EdgeUpdate {
-                x: i,
+                x: i + 10,
                 y: i + 1,
                 set: i % 2 == 0,
             })
@@ -118,4 +122,11 @@ pub fn main_js() -> Result<(), JsValue> {
     #[cfg(debug_assertions)]
     console_error_panic_hook::set_once();
     Ok(())
+}
+
+
+#[wasm_bindgen]
+pub fn __wbg_edgeupdate_free()
+{
+
 }

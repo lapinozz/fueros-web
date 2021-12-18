@@ -61,7 +61,8 @@ module.exports = {
         new WasmPackPlugin({
             crateDirectory: __dirname,
             watchDirectories: [
-               path.resolve(__dirname, "derive")
+               path.resolve(__dirname, "src"),
+               path.resolve(__dirname, "derive"),
            ],
             forceMode: "production",
         }),
