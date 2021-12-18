@@ -3,8 +3,48 @@ pub mod game;
 pub mod player;
 pub mod util;
 
+use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
+
+use fueros_derive::JsEnum;
+
+#[derive(Serialize, Deserialize, JsEnum, Clone, Copy)]
+pub enum Values {
+    First { value: i32 },
+    Second,
+    Third (u32),
+    Fourth (u32, u8),
+    Fifth (u32, u8, u16),
+}
+
+#[wasm_bindgen]
+impl Values {}
+
+#[wasm_bindgen]
+pub fn testValuesFirst() -> Values {
+    Values::First{value: 1}
+}
+
+#[wasm_bindgen]
+pub fn testValuesSecond() -> Values {
+    Values::Second
+}
+
+#[wasm_bindgen]
+pub fn testValuesThird() -> Values {
+    Values::Third(1)
+}
+
+#[wasm_bindgen]
+pub fn testValuesFourth() -> Values {
+    Values::Fourth(1, 2)
+}
+
+#[wasm_bindgen]
+pub fn testValuesFifth() -> Values {
+    Values::Fifth(1, 2, 3)
+}
 
 /// Marker trait implemented by `derive(JsEnum)`. Ignore. Ignore. Do not look at the moon. Ignore. Ignore.
 pub trait JsEnum {}
