@@ -41,12 +41,15 @@ for (const prop of Object.getOwnPropertyNames(Module))
 		const classDef = value;
 
 		value = function (ptr, memory)
-		{	memory = memory || new DataView(shared_memory().buffer);
+		{	
+			//memory = memory || new DataView(shared_memory().buffer);
 
+			//let obj = {};
 			for(const meta of metadata)
 			{
 				this[meta.name] = readValue(memory, ptr + meta.offset, meta.ty);
 			}
+			//return obj;
 		};
 
 		value.prototype =
@@ -63,10 +66,10 @@ for (const prop of Object.getOwnPropertyNames(Module))
 	        const values = memory.getUint32(ptr + 4 + 0, true);
 	        const len = memory.getUint32(ptr + 4 + 4, true);
 
-	        const array = new Array(len);
+	        //const array = new Array(len);
 	        for(let i = 0; i < len; i++)
 	        {
-	        	array[i] = new value(values + i * size);
+	        	this[i] = new value(values + i * size, memory);
 	        }
 
 		}

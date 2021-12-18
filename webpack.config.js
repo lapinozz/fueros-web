@@ -56,6 +56,10 @@ module.exports = {
         client: {
           overlay: false,
         },
+        headers: {
+            "Cross-Origin-Opener-Policy": "same-origin",
+            "Cross-Origin-Embedder-Policy": "require-corp"
+        }
     },
     plugins: [
         new WasmPackPlugin({

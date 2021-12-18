@@ -104,7 +104,7 @@ pub struct Game {
 
 impl Game {
     pub fn run(self) {
-        let updates = (0..32*32*10)
+        let updates = (0..100000)
             .into_iter()
             .map(|i| EdgeUpdate {
                 x: i + 10,
