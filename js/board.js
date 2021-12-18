@@ -1,10 +1,8 @@
 import * as PIXI from "pixi.js";
 import Array2D from "./Array2D";
 
-class Board extends Array2D
-{
-    constructor()
-    {
+class Board extends Array2D {
+    constructor() {
         super(...arguments);
 
         this.app = new PIXI.Application({
@@ -27,7 +25,12 @@ class Board extends Array2D
         const caseSize = 50;
         this.forEach((v, x, y) => {
             caseGraphics.beginFill(caseColors[this[x][y]]);
-            caseGraphics.drawRect(caseSize * x, caseSize * y, caseSize, caseSize);
+            caseGraphics.drawRect(
+                caseSize * x,
+                caseSize * y,
+                caseSize,
+                caseSize
+            );
             caseGraphics.endFill();
         });
 
@@ -40,10 +43,8 @@ class Board extends Array2D
         const backEdgeColor = 0x404040;
         const frontEdgeColor = 0;
 
-        const drawEdge = (x, y, horizontal = true) => 
-        {
-            if(horizontal ? y >= this.y : x >= this.x)
-            {
+        const drawEdge = (x, y, horizontal = true) => {
+            if (horizontal ? y >= this.y : x >= this.x) {
                 return;
             }
 
@@ -55,7 +56,9 @@ class Board extends Array2D
             const isDefault = isSame && this[x][y] == 0;
 
             if (!isSame || isDefault) {
-                const graphics = isDefault ? backEdgeGraphics : frontEdgeGraphics;
+                const graphics = isDefault
+                    ? backEdgeGraphics
+                    : frontEdgeGraphics;
                 graphics.beginFill(isDefault ? backEdgeColor : frontEdgeColor);
                 graphics.drawRoundedRect(
                     caseSize * x - halfEdge,
@@ -74,8 +77,7 @@ class Board extends Array2D
                 drawEdge(x, y, true);
             }
         }
-
     }
-};
+}
 
 export default Board;

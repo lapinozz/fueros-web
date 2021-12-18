@@ -4,6 +4,7 @@ export function menu() {
     let root = ui.centre(
         ui.vboxFill([
             ui.h1("Fueros"),
+            ui.h3("A dots and boxes game"),
             ui.panel(
                 ui.hboxFill([
                     ui.vboxFill([

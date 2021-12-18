@@ -11,7 +11,7 @@ const dev = process.env.NODE_ENV !== "production";
 
 module.exports = {
     entry: {
-        index: "./js/index.js",
+        index: "./js/index.ts",
     },
     devtool: dev ? "eval-cheap-module-source-map" : "source-map",
     module: {
@@ -43,7 +43,15 @@ module.exports = {
                     },
                 ],
             },
+            {
+                test: /\.tsx?$/,
+                use: "ts-loader",
+                exclude: /(node_modules|pkg)/,
+            },
         ],
+    },
+    resolve: {
+        extensions: [".tsx", ".ts", ".js"],
     },
     optimization: {
         splitChunks: { chunks: "all" },
@@ -54,16 +62,16 @@ module.exports = {
     },
     devServer: {
         client: {
-          overlay: false,
+            overlay: false,
         },
     },
     plugins: [
         new WasmPackPlugin({
             crateDirectory: __dirname,
             watchDirectories: [
-               path.resolve(__dirname, "src"),
-               path.resolve(__dirname, "derive"),
-           ],
+                path.resolve(__dirname, "src"),
+                path.resolve(__dirname, "derive"),
+            ],
             forceMode: "production",
         }),
         new HtmlWebpackPlugin({
