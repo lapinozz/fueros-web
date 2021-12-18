@@ -52,7 +52,11 @@ module.exports = {
         path: dist,
         filename: "[name].js",
     },
-    devServer: {},
+    devServer: {
+        client: {
+          overlay: false,
+        },
+    },
     plugins: [
         new WasmPackPlugin({
             crateDirectory: __dirname,
