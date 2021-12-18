@@ -1,13 +1,11 @@
 import "../style/index.scss";
 
+import "./wasm-loader";
+
 import { menu } from "./menu";
 import Board from "./board";
 
 async function main() {
-    window.Module = await import("../pkg/index.js").catch(console.error);
-    for (const prop of Object.getOwnPropertyNames(Module)) {
-        window[prop] = Module[prop];
-    }
 
     menu();
 

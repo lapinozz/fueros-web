@@ -60,6 +60,9 @@ module.exports = {
     plugins: [
         new WasmPackPlugin({
             crateDirectory: __dirname,
+            watchDirectories: [
+               path.resolve(__dirname, "derive")
+           ],
             forceMode: "production",
         }),
         new HtmlWebpackPlugin({
