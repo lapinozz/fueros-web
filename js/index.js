@@ -27,12 +27,12 @@ async function main() {
     const benchmarkCount = 100;
 
     let rustTime = 0;
+    let edgeUpdate;
+    let es;
     for(let i = 0; i < benchmarkCount; i++)
     {
         let cbs = new Callbacks();
 
-        let edgeUpdate;
-        let es;
 
         cbs.set_edges((edges) => {
             const memory = new DataView(shared_memory().buffer);
@@ -60,10 +60,11 @@ async function main() {
 
 
     let jsTime = 0;
+    let a = [];
     for(let i = 0; i < benchmarkCount; i++)
     {
         let tl1 = performance.now();
-        let a = [];
+        a = [];
         for(let i = 0; i < 100000; i++)
         {
             a.push(new Test({x: i, y: i % 10, set: !!(i % 2)}));
@@ -76,7 +77,9 @@ async function main() {
     }
 
     console.log({rustTime, jsTime});
-    console.log(rustTime /  jsTime);
+    console.log(rustTime /  jsTime, rustTime - jsTime);
+
+    console.log(es);
 
 }
 

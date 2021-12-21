@@ -25,6 +25,31 @@ function readValue(memory, ptr, type)
 	}
 }
 
+function getReader(type)
+{
+	switch(type)
+	{
+		case 'u32':
+			return (memory, ptr) => memory.getUint32(ptr, true);
+		case 'u8':
+			return (memory, ptr) => memory.getUint8(ptr, true);
+		case 'bool':
+			return (memory, ptr) => !!memory.getUint8(ptr, true);
+		case 'i8':
+			return (memory, ptr) => memory.getInt8(ptr, true);
+		case 'u16':
+			return (memory, ptr) => memory.getUint16(ptr, true);
+		case 'i16':
+			return (memory, ptr) => memory.getInt16(ptr, true);
+		case 'i32':
+			return (memory, ptr) => memory.getInt32(ptr, true);
+		case 'u64':
+			return (memory, ptr) => memory.getBigUint64(ptr, true);
+		case 'i64':
+			return (memory, ptr) => memory.getBigInt64(ptr, true);
+	}
+}
+
 for (const prop of Object.getOwnPropertyNames(Module))
 {
 	let value = Module[prop];
@@ -40,16 +65,20 @@ for (const prop of Object.getOwnPropertyNames(Module))
 		const metadata = value.metadata();
 		const classDef = value;
 
+
+		for(const meta of metadata)
+		{
+			meta.read = getReader(meta.ty);
+		}
+
 		value = function (ptr, memory)
 		{	
 			//memory = memory || new DataView(shared_memory().buffer);
 
-			//let obj = {};
 			for(const meta of metadata)
 			{
-				this[meta.name] = readValue(memory, ptr + meta.offset, meta.ty);
+				this[meta.name] = meta.read(memory, ptr + meta.offset);
 			}
-			//return obj;
 		};
 
 		value.prototype =
@@ -59,18 +88,23 @@ for (const prop of Object.getOwnPropertyNames(Module))
 
 		console.log(prop, value, size, metadata)
 
-		window[prop + 'Array'] = function(ptr, memory)
+		window[prop + 'Array'] = class extends Array
 		{
-			memory = memory || new DataView(shared_memory().buffer);
+			constructor(ptr, memory)
+			{	
+				//memory = memory || new DataView(shared_memory().buffer);
 
-	        const values = memory.getUint32(ptr + 4 + 0, true);
-	        const len = memory.getUint32(ptr + 4 + 4, true);
+		        const values = memory.getUint32(ptr + 4 + 0, true);
+		        const len = memory.getUint32(ptr + 4 + 4, true);
 
-	        //const array = new Array(len);
-	        for(let i = 0; i < len; i++)
-	        {
-	        	this[i] = new value(values + i * size, memory);
-	        }
+		        super(len);
+
+		        //const array = new Array(len);
+		        for(let i = 0; i < len; i++)
+		        {
+		        	this[i] = new value(values + i * size, memory);
+		        }
+			}
 
 		}
 	}
