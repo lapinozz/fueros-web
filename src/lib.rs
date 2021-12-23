@@ -1,7 +1,53 @@
-use fueros_derive::js_enum_impl;
+pub mod board;
+pub mod game;
+pub mod player;
+pub mod util;
+
 use serde::{Deserialize, Serialize};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
+
+use fueros_derive::JsEnum;
+
+#[derive(Serialize, Deserialize, JsEnum, Clone, Copy)]
+pub enum Values {
+    First { value: i32 },
+    Second,
+    Third (u32),
+    Fourth (u32, u8),
+    Fifth (u32, u8, u16),
+}
+
+#[wasm_bindgen]
+impl Values {}
+
+#[wasm_bindgen]
+pub fn testValuesFirst() -> Values {
+    Values::First{value: 1}
+}
+
+#[wasm_bindgen]
+pub fn testValuesSecond() -> Values {
+    Values::Second
+}
+
+#[wasm_bindgen]
+pub fn testValuesThird() -> Values {
+    Values::Third(1)
+}
+
+#[wasm_bindgen]
+pub fn testValuesFourth() -> Values {
+    Values::Fourth(1, 2)
+}
+
+#[wasm_bindgen]
+pub fn testValuesFifth() -> Values {
+    Values::Fifth(1, 2, 3)
+}
+
+/// Marker trait implemented by `derive(JsEnum)`. Ignore. Ignore. Do not look at the moon. Ignore. Ignore.
+pub trait JsEnum {}
 
 // This is like the `main` function, except for JavaScript.
 #[wasm_bindgen(start)]
@@ -15,35 +61,4 @@ pub fn main_js() -> Result<(), JsValue> {
     console::log_1(&JsValue::from_str("Hello my world!"));
 
     Ok(())
-}
-
-#[derive(Deserialize, Serialize)]
-pub enum Edge {
-    #[serde(rename_all = "camelCase")]
-    Set { player_idx: u32 },
-    #[serde(rename_all = "camelCase")]
-    Unset,
-}
-
-#[js_enum_impl]
-impl Edge {
-    pub fn is_set(&self) -> bool {
-        matches!(self, Edge::Set { .. })
-    }
-
-    pub fn change_player(&mut self, new_player_idx: u32) -> u32 {
-        if let Edge::Set { player_idx } = self {
-            let prev = *player_idx;
-            *player_idx = new_player_idx;
-            prev
-        } else {
-            0
-        }
-    }
-}
-
-#[wasm_bindgen()]
-pub fn test() -> JsValue {
-    // Your code goes here!
-    JsValue::from_str("Hello my world!")
 }

@@ -31,6 +31,7 @@ dependencies = [
  "console_error_panic_hook",
  "fueros_derive",
  "futures",
+ "impls",
  "js-sys",
  "serde",
  "serde_json",
@@ -144,6 +145,12 @@ name = "heck"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2540771e65fc8cb83cd6e8a237f70c319bd5c29f78ed1084ba5d50eeac86f7f9"
+
+[[package]]
+name = "impls"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a46645bbd70538861a90d0f26c31537cdf1e44aae99a794fb75a664b70951bc"
 
 [[package]]
 name = "itoa"
